@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from 'react'
-
+import React ,{useEffect, useState} from "react";
 import api from './services/api'
 
 import {
@@ -16,59 +15,68 @@ export default function App() {
 
   const [repositories, setRepositories] = useState([])
 
-    useEffect(()=>{
-        api.get('repositories').then(response =>{
-            setRepositories(response.data)
-        })
+  useEffect(()=>{
+    api.get('repositories').then(response =>{
+        setRepositories(response.data)
     })
+  }, [])
 
   async function handleLikeRepository(id) {
-     const response = await api.post(`repositories/${id}/like`);
-     const reposity = response.data;
+    const response = await api.post(`repositories/${id}/like`)
 
-     setRepositories([...repositories, reposity])
+    const index = repositories.findIndex(repository => repository.id === id);
+    let repository = response.data
+    repository.likes = repository.likes++
+
+    repositories[index] = repository;
+    setRepositories([...repositories])
+
   }
 
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
       <SafeAreaView style={styles.container}>
-            
-            <FlatList 
+
+
+      <FlatList 
             data={repositories}
             keyExtractor={repository => repository.id}
             renderItem={({ item: repo })=>(
               <>
+        <View style={styles.repositoryContainer}>
+          <Text style={styles.repository}>{repo.title}</Text>
 
-                <View style={styles.repositoryContainer}>
-                  <Text style={styles.repository}>{repo.title}</Text>
+          <View style={styles.techsContainer}>
+            <Text style={styles.tech}>
+              {repo.techs[0]}
+            </Text>
+            
+          </View>
 
-                  <View style={styles.techsContainer}>
-                    {repo.techs.map((rep) => (
-                    <Text style={styles.tech} key={rep}> {rep} </Text> 
-                    ))}
-                  </View>
+          <View style={styles.likesContainer}>
+            <Text
+              style={styles.likeText}
+              // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
+              testID={`repository-likes-${repo.id}`}
+            >
+              {repo.likes > 1 ? `${repo.likes} curtidas` : `${repo.likes} curtida`} 
+            </Text>
+          </View>
 
-                  <View style={styles.likesContainer}>
-                    <Text
-                      style={styles.likeText}
-                    >
-                      {repo.likes} curtidas
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => handleLikeRepository(repo.id)}
-                  >
-                    <Text style={styles.buttonText}>Curtir</Text>
-                  </TouchableOpacity>
-                </View>
-
-              </>
-            )}
-            />
-
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleLikeRepository(repo.id)}
+            // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
+            testID={`like-button-${repo.id}`}
+          >
+            <Text style={styles.buttonText}>Curtir</Text>
+          </TouchableOpacity>
+        </View>
+        
+        </>
+        )}
+        />
       </SafeAreaView>
     </>
   );
